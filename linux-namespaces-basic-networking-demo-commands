@@ -1,0 +1,9 @@
+sudo ip netns add $namespace1​
+sudo ip netns add $namespace2​
+ip netns list​
+sudo ip netns exec $namespace2 ip ad​
+sudo ip link add ptp-$interface1 type veth peer name ptp-$interface2​
+ip link​
+sudo ip link set ptp-$interface1 netns $namespace1​
+sudo ip link set ptp-$interface2 netns $namespace2​
+sudo ip netns exec $namespace2 ip ad
