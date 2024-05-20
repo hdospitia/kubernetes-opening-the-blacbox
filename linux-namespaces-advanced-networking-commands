@@ -1,0 +1,25 @@
+sudo ip netns add $namespace1​
+sudo ip netns add $namespace2​
+sudo ip netns add $namespace3​
+sudo systemctl start openvswitch​
+sudo ovs-vsctl add-br NAMESPACE-DEMO​
+sudo ip link add $interface1 type veth peer name ovs-$interface1​
+sudo ip link set $interface1 netns $namespace1​
+sudo ip link add $interface2 type veth peer name ovs-$interface2​
+sudo ip link set $interface2 netns $namespace2​
+sudo ip link add $interface3 type veth peer name ovs-$interface3​
+sudo ip link set $interface3 netns $namespace3​
+sudo ovs-vsctl add-port NAMESPACE-DEMO ovs-$interface1​
+sudo ovs-vsctl add-port NAMESPACE-DEMO ovs-$interface2​
+sudo ovs-vsctl add-port NAMESPACE-DEMO ovs-$interface3​
+sudo ovs-vsctl list-ports NAMESPACE-DEMO​
+sudo ip link set dev ovs-$interface1 up​
+sudo ip link set dev ovs-$interface2 up​
+sudo ip link set dev ovs-$interface3 up
+sudo ip netns exec $namespace1 ip addr add $ip_address1 dev $interface1​
+sudo ip netns exec $namespace2 ip addr add $ip_address2 dev $interface2​
+sudo ip netns exec $namespace3 ip addr add $ip_address3 dev $interface3​
+sudo ip netns exec $namespace1 ip link set dev $interface1 up​
+sudo ip netns exec $namespace2 ip link set dev $interface2 up​
+sudo ip netns exec $namespace3 ip link set dev $interface3 up​
+sudo ip netns exec $namespace3 ping -c 2 10.10.10.20
