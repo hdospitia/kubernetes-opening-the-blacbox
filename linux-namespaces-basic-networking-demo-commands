@@ -7,3 +7,9 @@ ip link​
 sudo ip link set ptp-$interface1 netns $namespace1​
 sudo ip link set ptp-$interface2 netns $namespace2​
 sudo ip netns exec $namespace2 ip ad
+sudo ip netns exec $namespace1 ip addr add $ip_address1 dev ptp-$interface1​
+sudo ip netns exec $namespace2 ip addr add $ip_address2 dev ptp-$interface2​
+sudo ip netns exec $namespace1 ip link set dev ptp-$interface1 up​
+sudo ip netns exec $namespace2 ip link set dev ptp-$interface2 up​
+sudo ip netns exec $namespace2 $command &​
+curl --connect-timeout 3 10.10.10.20:8000​
