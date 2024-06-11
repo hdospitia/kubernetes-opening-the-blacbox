@@ -1,0 +1,46 @@
+# Add network namespaces
+sudo ip netns add east
+sudo ip netns add west
+sudo ip netns add central
+
+# Start OVS.
+# Install OpenVSwitch following the instructions in
+# https://docs.openvswitch.org/en/latest/intro/install/index.html#installation-from-packages
+sudo systemctl start ovs-vswitchd
+
+# Add a virtual bridge (Switch)
+sudo ovs-vsctl add-br NAMESPACE-DEMO
+
+# Add virtual devices and cables with ends in network namespace and virtual bridge
+sudo ip link add east-interface type veth peer name ovs-east-interface
+sudo ip link set east-interface netns east
+sudo ip link add west-interface type veth peer name ovs-west-interface
+sudo ip link set west-interface netns west
+sudo ip link add central-interface type veth peer name ovs-central-interface
+sudo ip link set central-interface netns central
+
+# Set end of virtual device/cable at virtual bridge
+sudo ovs-vsctl add-port NAMESPACE-DEMO ovs-east-interface
+sudo ovs-vsctl add-port NAMESPACE-DEMO ovs-west-interface
+sudo ovs-vsctl add-port NAMESPACE-DEMO ovs-central-interface
+
+# List attached devices to the virtual bridge
+sudo ovs-vsctl list-ports NAMESPACE-DEMO
+
+# Set up the virtual devices connected to the virtual bridge
+sudo ip link set dev ovs-east-interface up
+sudo ip link set dev ovs-west-inteface up
+sudo ip link set dev ovs-central-interface up
+
+# Add IPs to the virtual devices at network namespaces
+sudo ip netns exec east ip addr add 10.10.10.10/24 dev east-interface
+sudo ip netns exec west ip addr add 10.10.10.20/24 dev west-interface
+sudo ip netns exec central ip addr add 10.10.10.30/24 dev central-interface
+
+# Set up virtual devices at network namespaces
+sudo ip netns exec east ip link set dev east-interface up
+sudo ip netns exec west ip link set dev west-interface up
+sudo ip netns exec central ip link set dev central-interface up
+
+# Test with ping from different network namespaces
+sudo ip netns exec central ping -c 4 10.10.10.20

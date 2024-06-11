@@ -1,0 +1,36 @@
+# Create network namespaces
+sudo ip netns add client-namespace
+sudo ip netns add server-namespace
+
+# List network namespaces
+ip netns list
+
+# List IPs in client namespace
+sudo ip netns exec client-namespace ip ad
+
+# Create virtual interface and virtual cable with two network ends
+sudo ip link add ptp-client-interface type veth peer name ptp-server-interface
+
+# List virtual interface in the root namespace
+ip link
+
+# Set virtual cable connection to namespaces
+sudo ip link set ptp-client-interface netns client-namespace
+sudo ip link set ptp-server-interface netns server-namespace
+
+# List IPs in server namespace
+sudo ip netns exec server-namespace ip ad
+
+# Add IP to namespaces
+sudo ip netns exec client-namespace ip addr add 10.10.10.10/24 dev ptp-client-interface
+sudo ip netns exec server-namespace ip addr add 10.10.10.20/24 dev ptp-server-interface
+
+# Set interfaces up
+sudo ip netns exec client-namespace ip link set dev ptp-client-interface up
+sudo ip netns exec server-namespace ip link set dev ptp-server-interface ip
+
+# Start up an HTTP server in the server namespace
+sudo ip netns exec server-namespace python3 -m http.server &
+
+# Test by sending an HTTP request from the client namespace to the server namespace
+sudo ip netns exec client-namespace curl --connect-timeout 3 10.10.10.20:8000
